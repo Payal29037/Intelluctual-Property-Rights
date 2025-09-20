@@ -1,0 +1,40 @@
+# Cursor ignore file
+# This file tells Cursor which files to ignore
+
+# Environment files (allow .env.example, ignore .env)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Database files
+*.db
+*.sqlite
+
+# Upload directories
+uploads/
+temp/
