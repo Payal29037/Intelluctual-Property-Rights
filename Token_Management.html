@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Management</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f4f7fb;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    .form-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f9fbff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+    }
+
+    .form-section h3 {
+      margin-top: 0;
+      color: #444;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .add-btn {
+      padding: 12px 18px;
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .add-btn:hover {
+      background: #357abd;
+    }
+
+    .token-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .token-card {
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 20px;
+      background: #fafafa;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .token-card h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #222;
+    }
+
+    .token-card p {
+      margin: 6px 0;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .actions {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .button {
+      padding: 10px;
+      background: #4a90e2;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      text-align: center;
+    }
+
+    .button:hover {
+      background: #357abd;
+    }
+
+    .withdraw {
+      background: #28a745;
+    }
+
+    .withdraw:hover {
+      background: #1e7e34;
+    }
+
+    .sale-status {
+      font-weight: bold;
+      color: #b33c00;
+    }
+
+    .past-owners {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #f0f7ff;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+
+    .info {
+      background: #e7f1ff;
+      border: 1px solid #cfe2ff;
+      color: #084298;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Token Management</h2>
+
+    <!-- Add Token Form -->
+    <div class="form-section">
+      <h3>Add New Token</h3>
+      <div class="form-group">
+        <label for="tokenId">Token ID</label>
+        <input type="text" id="tokenId" placeholder="Enter Token ID">
+      </div>
+      <div class="form-group">
+        <label for="workName">Work Name</label>
+        <input type="text" id="workName" placeholder="Enter Work Name (e.g., Artwork #12)">
+      </div>
+      <div class="form-group">
+        <label for="creatorName">Creator Name</label>
+        <input type="text" id="creatorName" placeholder="Enter Creator Name">
+      </div>
+      <button class="add-btn" onclick="addToken()">➕ Add Token</button>
+    </div>
+
+    <!-- Tokens owned -->
+    <h3>Owned Tokens</h3>
+    <div id="tokenList" class="token-list"></div>
+
+    <!-- Tokens for Sale -->
+    <h3>Tokens for Sale</h3>
+    <div id="saleList" class="token-list"></div>
+
+    <!-- Past owner note -->
+    <div class="past-owners">
+      <h3>ℹ️ Past Owners</h3>
+      <p>Past owners can still claim pending payments from previously owned tokens, but no new payments will be assigned once a token sale is confirmed.</p>
+    </div>
+
+    <!-- Status messages -->
+    <div id="statusMessage" class="status"></div>
+  </div>
+
+  <script>
+    const tokenList = document.getElementById("tokenList");
+    const saleList = document.getElementById("saleList");
+    const status = document.getElementById("statusMessage");
+
+    // Add some existing tokens
+    const existingTokens = [
+      { id: "101", work: "Landscape Painting", creator: "Alice", forSale: false },
+      { id: "102", work: "Digital Artwork", creator: "Bob", forSale: true },
+      { id: "103", work: "Music Track", creator: "Charlie", forSale: false }
+    ];
+
+    existingTokens.forEach(t => addTokenCard(t.id, t.work, t.creator, t.forSale, false));
+
+    // Function to add new token via form
+    function addToken() {
+      const tokenId = document.getElementById("tokenId").value;
+      const workName = document.getElementById("workName").value;
+      const creatorName = document.getElementById("creatorName").value;
+
+      if (!tokenId || !workName || !creatorName) {
+        alert("⚠️ Please fill all fields before adding a token.");
+        return;
+      }
+
+      addTokenCard(tokenId, workName, creatorName, false, true);
+
+      // Reset form fields
+      document.getElementById("tokenId").value = "";
+      document.getElementById("workName").value = "";
+      document.getElementById("creatorName").value = "";
+    }
+
+    // Function to create token card
+    function addTokenCard(tokenId, workName, creatorName, forSale, isNew) {
+      const card = document.createElement("div");
+      card.className = "token-card";
+      card.innerHTML = `
+        <h3>Token #${tokenId}</h3>
+        <p><strong>Work:</strong> ${workName}</p>
+        <p><strong>Creator:</strong> ${creatorName}</p>
+        <p><strong>Status:</strong> <span class="sale-status">${forSale ? "For Sale" : "Owned"}</span></p>
+        <div class="actions">
+          <button class="button" onclick="listForSale('${tokenId}', this)">List for Sale</button>
+          <button class="button withdraw" onclick="withdrawPayments('${tokenId}')">Withdraw Payments</button>
+        </div>
+      `;
+
+      if (forSale) {
+        saleList.appendChild(card);
+      } else {
+        tokenList.appendChild(card);
+      }
+
+      if (isNew) showMessage(`✅ Token #${tokenId} has been added successfully.`, "success");
+    }
+
+    // List for sale
+    function listForSale(tokenId, btn) {
+      const card = btn.closest(".token-card");
+      const statusText = card.querySelector(".sale-status");
+      statusText.textContent = "For Sale";
+
+      saleList.appendChild(card);
+
+      showMessage(`📢 Token #${tokenId} is now listed for sale on the marketplace.`, "info");
+    }
+
+    // Withdraw payments
+    function withdrawPayments(tokenId) {
+      showMessage(`💰 Payments from Token #${tokenId} have been successfully withdrawn.`, "success");
+    }
+
+    // Status messages
+    function showMessage(msg, type) {
+      status.className = "status " + type;
+      status.innerHTML = msg;
+      status.style.display = "block";
+      setTimeout(() => { status.style.display = "none"; }, 3000);
+    }
+  </script>
+</body>
+</html>
