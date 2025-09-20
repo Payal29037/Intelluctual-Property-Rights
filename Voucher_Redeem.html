@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voucher Redemption</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f4f7fb;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    label {
+      margin: 10px 0 6px;
+      font-weight: 600;
+      color: #333;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 15px;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #4a90e2;
+    }
+
+    .checkbox {
+      margin: 15px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .button {
+      margin-top: 15px;
+      padding: 14px;
+      background: #4a90e2;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+    }
+
+    .button:hover {
+      background: #357abd;
+    }
+
+    .status-message {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .minting {
+      border: 1px solid #ffeeba;
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .success {
+      border: 1px solid #c3e6cb;
+      background: #d4edda;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Voucher Redemption</h2>
+
+    <!-- Input fields for voucher details -->
+    <label for="voucherId">Voucher ID</label>
+    <input type="text" id="voucherId" placeholder="Enter Voucher ID (e.g. VCHR-2025)" required>
+
+    <label for="title">Work Title</label>
+    <input type="text" id="title" placeholder="Enter Work Title (e.g. Digital Artwork #21)" required>
+
+    <label for="creator">Creator Name</label>
+    <input type="text" id="creator" placeholder="Enter Creator Name (e.g. John Doe)" required>
+
+    <label for="license">License Type</label>
+    <select id="license" required>
+      <option value="">-- Select License Type --</option>
+      <option value="exclusive">Exclusive</option>
+      <option value="non-exclusive">Non-Exclusive</option>
+      <option value="royalty-free">Royalty-Free</option>
+    </select>
+
+    <!-- Confirm gas costs -->
+    <div class="checkbox">
+      <input type="checkbox" id="confirmGas">
+      <label for="confirmGas">I confirm I am willing to accept minting gas costs</label>
+    </div>
+
+    <!-- Redeem button -->
+    <button class="button" onclick="redeemVoucher()">Redeem Voucher</button>
+
+    <!-- Status messages -->
+    <div class="status-message minting" id="mintingMsg">
+      ⏳ Minting token... Please confirm the transaction in your wallet.
+    </div>
+
+    <div class="status-message success" id="successMsg">
+      ✅ Token minted successfully! You can now interact with your NFT.
+    </div>
+  </div>
+
+  <script>
+    function redeemVoucher() {
+      let voucherId = document.getElementById("voucherId").value.trim();
+      let title = document.getElementById("title").value.trim();
+      let creator = document.getElementById("creator").value.trim();
+      let license = document.getElementById("license").value;
+      let confirmGas = document.getElementById("confirmGas");
+      let mintingMsg = document.getElementById("mintingMsg");
+      let successMsg = document.getElementById("successMsg");
+
+      if (!voucherId || !title || !creator || !license) {
+        alert("Please fill in all voucher details before redeeming.");
+        return;
+      }
+
+      if (!confirmGas.checked) {
+        alert("Please confirm acceptance of minting gas costs before proceeding.");
+        return;
+      }
+
+      mintingMsg.style.display = "block";
+      successMsg.style.display = "none";
+
+      // Simulate blockchain minting delay
+      setTimeout(() => {
+        mintingMsg.style.display = "none";
+        successMsg.style.display = "block";
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

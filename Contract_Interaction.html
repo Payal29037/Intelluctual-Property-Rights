@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contract Interaction Screen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background: #4a90e2;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #4a90e2;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      border-color: #4a90e2;
+      outline: none;
+    }
+
+    .pay-btn {
+      width: 100%;
+      background: #4a90e2;
+      color: white;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+
+    .pay-btn:hover {
+      background: #357ABD;
+    }
+
+    .info-box {
+      background: #eef5ff;
+      border-left: 4px solid #4a90e2;
+      padding: 12px;
+      margin-top: 20px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>⚖️ Contract Interaction Screen</header>
+
+  <div class="container">
+    <h2>Make License Payment</h2>
+
+    <!-- Select Copyright -->
+    <label for="copyright">Select Copyright:</label>
+    <select id="copyright">
+      <option value="">-- Choose a Copyright --</option>
+      <option value="music101">🎵 Music Copyright #101</option>
+      <option value="art45">🎨 Digital Artwork #45</option>
+      <option value="patent302">📄 Patent Rights #302</option>
+      <option value="film87">🎬 Film Script #87</option>
+    </select>
+
+    <!-- License Duration -->
+    <label for="duration">License Duration (Months):</label>
+    <input type="number" id="duration" placeholder="e.g. 12" min="1" max="60">
+
+    <!-- Payment Amount -->
+    <label for="payment">Payment Amount (MATIC):</label>
+    <input type="number" id="payment" placeholder="e.g. 2.5" step="0.01" min="0">
+
+    <!-- Submit Button -->
+    <button class="pay-btn">Confirm & Pay</button>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      Once confirmed, your payment will be processed via smart contract.  
+      The license will be active for the selected duration, and funds will be transferred to the copyright owner.  
+    </div>
+  </div>
+</body>
+</html>

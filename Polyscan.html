@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Polyscan — Demo Explorer (Light)</title>
+<style>
+  :root{
+    --page-bg: #ffffff;
+    --card-bg: #f8fafc;
+    --muted: #55607a;
+    --text: #111827;
+    --accent: #2563eb;
+    --good: #16a34a;
+    --warn: #d97706;
+    --bad: #dc2626;
+    --chip: #f1f5f9;
+    --stroke: #e6eef8;
+    --shadow: 0 6px 18px rgba(15,23,42,0.06);
+    --radius: 12px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:var(--page-bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* Top bar */
+  header{
+    position:sticky; top:0; z-index:40;
+    background:linear-gradient(180deg, #ffffff, #fbfdff);
+    border-bottom:1px solid var(--stroke);
+    box-shadow: 0 1px 0 rgba(15,23,42,0.03);
+  }
+  .nav{
+    max-width:1200px; margin:0 auto; padding:14px 18px;
+    display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px;
+  }
+  .logo{
+    width:28px;height:28px;border-radius:8px;
+    background:linear-gradient(135deg,#60a5fa,#7c3aed);
+    box-shadow:0 2px 8px rgba(99,102,241,0.12);
+  }
+  .search{
+    flex:1 1 480px; display:flex; gap:8px;
+  }
+  .search input{
+    width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--stroke);
+    background: #fff; color:var(--text); outline:none; box-shadow:var(--shadow);
+  }
+  .search button{
+    padding:12px 14px; border-radius:10px; border:1px solid var(--stroke);
+    background:#fff; color:var(--accent); cursor:pointer; box-shadow:var(--shadow);
+  }
+  .wallet-chip{
+    display:flex; align-items:center; gap:10px; padding:8px 14px;
+    border-radius:999px; background:var(--chip); color:var(--muted);
+    border:1px solid var(--stroke); white-space:nowrap;
+  }
+  .dot{width:8px;height:8px;border-radius:50%; background:var(--good); box-shadow:0 0 6px rgba(16,185,129,0.12)}
+
+  /* Layout */
+  .wrap{max-width:1200px; margin:22px auto; padding:0 18px; display:grid; grid-template-columns:1.1fr 2fr; gap:20px}
+  @media (max-width:980px){ .wrap{grid-template-columns:1fr} }
+
+  /* Cards */
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow: var(--shadow);
+  }
+  .card h3{margin:0 0 10px; font-size:18px}
+  .muted{color:var(--muted)}
+  .row{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .addr{
+    font-family: var(--mono);
+    background:#fff; padding:8px 10px; border-radius:10px; border:1px solid var(--stroke);
+    color:var(--text);
+  }
+  .copy{
+    padding:8px 10px; border-radius:10px; border:1px solid var(--stroke); background:#fff; color:var(--accent);
+    cursor:pointer;
+  }
+
+  /* Tabs */
+  .tabs{margin-top:16px}
+  .tab-head{display:flex; gap:8px; flex-wrap:wrap}
+  .tab-head label{
+    padding:10px 14px; border-radius:10px; cursor:pointer; border:1px solid transparent;
+    background:#fff; color:var(--muted); font-weight:600;
+    transition:.12s;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+  }
+  input[type=radio]{display:none}
+  input#t1:checked ~ .tab-head label[for=t1],
+  input#t2:checked ~ .tab-head label[for=t2],
+  input#t3:checked ~ .tab-head label[for=t3]{
+    color:var(--text); background:linear-gradient(180deg,#fff,#f8fbff); border-color:var(--stroke);
+    box-shadow:0 4px 18px rgba(37,99,235,0.06);
+  }
+  .panel{display:none; margin-top:14px}
+  #t1:checked ~ .panel.txns,
+  #t2:checked ~ .panel.contracts,
+  #t3:checked ~ .panel.tokens{display:block}
+
+  /* Table */
+  .table{
+    width:100%; border-collapse:separate; border-spacing:0 10px; font-size:14px;
+  }
+  .table thead th{
+    text-align:left; padding:10px 12px; color:var(--muted); font-weight:700; font-size:13px;
+  }
+  .table tbody tr{
+    background:#fff; border:1px solid var(--stroke); border-radius:10px;
+  }
+  .table tbody td{
+    padding:12px; vertical-align:middle; border-top:1px solid transparent;
+  }
+  .table tbody tr td:first-child{border-radius:8px 0 0 8px}
+  .table tbody tr td:last-child{border-radius:0 8px 8px 0}
+  .hash, .mono{font-family:var(--mono); color:#0f1724}
+  .link{color:var(--accent); text-decoration:none; font-weight:600}
+  .badge{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+    background:var(--chip); border:1px solid var(--stroke); color:var(--muted); font-weight:700; font-size:12px;
+  }
+  .b-success{background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.12); color:var(--good)}
+  .b-warn{background:rgba(217,119,6,0.06); border-color:rgba(217,119,6,0.12); color:var(--warn)}
+  .b-info{background:rgba(37,99,235,0.06); border-color:rgba(37,99,235,0.12); color:var(--accent)}
+
+  /* small helper */
+  .small{font-size:13px; color:var(--muted)}
+  .note{max-width:1200px; margin:18px auto 40px; padding:0 18px; color:var(--muted); font-size:13px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand"><span class="logo" aria-hidden></span> Polyscan — Demo Explorer</div>
+
+    <div class="search" role="search" aria-label="Explorer search">
+      <input placeholder="Search by address / tx hash / block / token…" />
+      <button type="button">Search</button>
+    </div>
+
+    <div class="wallet-chip" title="Connected wallet">
+      <div class="dot" aria-hidden></div>
+      <div class="small">Connected: <span class="addr">0xA1b2…9CDe</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: Address / Contract summary -->
+  <section class="card" aria-labelledby="addrTitle">
+    <h3 id="addrTitle">Address Overview</h3>
+
+    <div class="row" style="margin-top:6px">
+      <div class="small">Address</div>
+      <div class="addr">0x3F…7cA1B9428f2a</div>
+      <button class="copy" onclick="navigator.clipboard.writeText('0x3F7cA1B9428f2a')">Copy</button>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div class="badge b-info">Type: Externally Owned Account</div>
+      <div class="badge b-success">Verified Demo</div>
+    </div>
+
+    <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px">
+      <div class="card" style="padding:12px">
+        <div class="small">Balance</div>
+        <div class="mono" style="font-weight:700">3.7000 MATIC</div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="small">Txn Count</div>
+        <div class="mono" style="font-weight:700">124</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Tabs & Tables -->
+  <section class="card" aria-labelledby="activityTitle">
+    <h3 id="activityTitle">Activity</h3>
+
+    <div class="tabs">
+      <input type="radio" name="tab" id="t1" checked>
+      <input type="radio" name="tab" id="t2">
+      <input type="radio" name="tab" id="t3">
+
+      <div class="tab-head" style="margin-top:8px">
+        <label for="t1">Transactions</label>
+        <label for="t2">Contract Creation</label>
+        <label for="t3">Token Transfers</label>
+      </div>
+
+      <!-- Transactions Panel -->
+      <div class="panel txns">
+        <table class="table" aria-label="Recent transactions">
+          <thead>
+            <tr>
+              <th>Txn Hash</th>
+              <th>Method</th>
+              <th>Block</th>
+              <th>Age</th>
+              <th>From</th>
+              <th></th>
+              <th>To</th>
+              <th>Value</th>
+              <th>Txn Fee</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono hash"><a class="link" href="#" aria-label="txn 0x9e2a4f1">0x9e2…a4f1</a></td>
+              <td><span class="badge b-info">mint()</span></td>
+              <td class="mono">59234102</td>
+              <td class="small">3 mins ago</td>
+              <td class="mono">0xA1b2…9CDe</td>
+              <td class="small">→</td>
+              <td class="mono"><a class="link" href="#">Contract 0x7f…c12e</a></td>
+              <td class="mono">0 MATIC</td>
+              <td class="mono">0.0031</td>
+            </tr>
+
+            <tr>
+              <td class="mono hash"><a class="link" href="#">0x5bd…73aa</a></td>
+              <td><span class="badge b-success">purchase()</span></td>
+              <td class="mono">59234010</td>
+              <td class="small">14 mins ago</td>
+              <td class="mono">0x33c…88af</td>
+              <td class="small">→</td>
+              <td class="mono"><a class="link" href="#">0xA1b2…9CDe</a></td>
+              <td class="mono">1.2000</td>
+              <td class="mono">0.0024</td>
+            </tr>
+
+            <tr>
+              <td class="mono hash"><a class="link" href="#">0x1a0…5042</a></td>
+              <td><span class="badge b-warn">listForSale()</span></td>
+              <td class="mono">59233992</td>
+              <td class="small">18 mins ago</td>
+              <td class="mono">0xA1b2…9CDe</td>
+              <td class="small">→</td>
+              <td class="mono"><a class="link" href="#">Contract 0x7f…c12e</a></td>
+              <td class="mono">0 MATIC</td>
+              <td class="mono">0.0012</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Contract Creation Panel -->
+      <div class="panel contracts">
+        <table class="table" aria-label="Contract creations">
+          <thead>
+            <tr>
+              <th>Txn Hash</th>
+              <th>Status</th>
+              <th>Block</th>
+              <th>Age</th>
+              <th>New Contract</th>
+              <th>Deployer</th>
+              <th>Gas Used</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono hash"><a class="link" href="#">0xd2f…c901</a></td>
+              <td><span class="badge b-success">Success</span></td>
+              <td class="mono">59233877</td>
+              <td class="small">27 mins ago</td>
+              <td class="mono"><a class="link" href="#">0x7f…c12e</a></td>
+              <td class="mono">0xA1b2…9CDe</td>
+              <td class="mono">312,004</td>
+            </tr>
+
+            <tr>
+              <td class="mono hash"><a class="link" href="#">0xa88…49e2</a></td>
+              <td><span class="badge b-success">Success</span></td>
+              <td class="mono">59211001</td>
+              <td class="small">2 hrs ago</td>
+              <td class="mono"><a class="link" href="#">0x19…77ab</a></td>
+              <td class="mono">0x33c…88af</td>
+              <td class="mono">298,220</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Token Transfers Panel -->
+      <div class="panel tokens">
+        <table class="table" aria-label="Token transfers">
+          <thead>
+            <tr>
+              <th>Txn Hash</th>
+              <th>Event</th>
+              <th>Token ID</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Age</th>
+              <th>Contract</th>
+            </tr>
+          </thead>
+        <tbody>
+          <tr>
+            <td class="mono hash"><a class="link" href="#">0x9e2…a4f1</a></td>
+            <td><span class="badge b-info">Mint</span></td>
+            <td class="mono">#21</td>
+            <td class="mono">0x000…0000</td>
+            <td class="mono">0xA1b2…9CDe</td>
+            <td class="small">3 mins ago</td>
+            <td class="mono"><a class="link" href="#">0x7f…c12e</a></td>
+          </tr>
+
+          <tr>
+            <td class="mono hash"><a class="link" href="#">0x5bd…73aa</a></td>
+            <td><span class="badge b-success">Transfer</span></td>
+            <td class="mono">#21</td>
+            <td class="mono">0xA1b2…9CDe</td>
+            <td class="mono">0x33c…88af</td>
+            <td class="small">14 mins ago</td>
+            <td class="mono"><a class="link" href="#">0x7f…c12e</a></td>
+          </tr>
+        </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<p class="note">
+  These mock screenshots represent a light-themed block explorer view (Polyscan style) showing transactions, contract creation events, and token transfers for the demo presentation. Transaction data is public and can be used to verify copyright events.
+</p>
+
+</body>
+</html>

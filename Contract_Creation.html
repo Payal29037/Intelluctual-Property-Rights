@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockchain Contract Creation</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f4f7fb;
+    }
+
+    .container {
+      max-width: 750px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin: 12px 0 6px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, textarea, select {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #4a90e2;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .file-upload {
+      border: 2px dashed #aaa;
+      padding: 20px;
+      text-align: center;
+      border-radius: 12px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .file-upload:hover {
+      border-color: #4a90e2;
+      background: #f0f7ff;
+    }
+
+    .button {
+      margin-top: 25px;
+      padding: 14px;
+      background: #4a90e2;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .button:hover {
+      background: #357abd;
+    }
+
+    .wallet-confirmation, .voucher-signing {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .wallet-confirmation {
+      border: 1px solid #cfe2ff;
+      background: #e7f1ff;
+      color: #084298;
+    }
+
+    .voucher-signing {
+      border: 1px solid #badbcc;
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Copyright Contract Creation</h2>
+    <form>
+      <label for="title">Work Title</label>
+      <input type="text" id="title" placeholder="Enter the title of your work" required>
+
+      <label for="creator">Creator Name</label>
+      <input type="text" id="creator" placeholder="Enter creator's name" required>
+
+      <label for="type">Work Type</label>
+      <select id="type" required>
+        <option value="">-- Select Work Type --</option>
+        <option value="audio">Audio</option>
+        <option value="artwork">Digital Artwork</option>
+        <option value="patent">Patent</option>
+        <option value="document">Document</option>
+      </select>
+
+      <label for="description">Description / Metadata</label>
+      <textarea id="description" placeholder="Provide description and metadata"></textarea>
+
+      <label for="license">License Type</label>
+      <select id="license" required>
+        <option value="">-- Select License Type --</option>
+        <option value="exclusive">Exclusive</option>
+        <option value="non-exclusive">Non-Exclusive</option>
+        <option value="royalty-free">Royalty-Free</option>
+      </select>
+
+      <label for="file">Upload File</label>
+      <div class="file-upload">
+        <input type="file" id="file" accept=".mp3,.wav,.png,.jpg,.jpeg,.pdf,.docx" required>
+      </div>
+
+      <button type="button" class="button" onclick="deployContract()">Deploy Contract</button>
+    </form>
+
+    <div class="wallet-confirmation" id="walletMessage">
+      🔑 Contract deployment initiated.<br>
+      Please confirm the transaction in your wallet software...
+    </div>
+
+    <div class="voucher-signing" id="voucherMessage">
+      ✅ Transaction confirmed.<br>
+      Voucher signing interaction triggered successfully.
+    </div>
+  </div>
+
+  <!-- Ethers.js v6 UMD build -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <script>
+    const BASE_URL = 'http://localhost:5000/api'; // Adjust if your backend runs elsewhere
+
+    async function fetchContractInfo() {
+      const res = await fetch(`${BASE_URL}/contracts/ipregistry`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Contract info not available');
+      return { address: data.address, abi: data.abi };
+    }
+
+    async function ensureWallet() {
+      if (!window.ethereum) {
+        throw new Error('MetaMask (or compatible wallet) not found. Please install/enable it.');
+      }
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send('eth_requestAccounts', []);
+      const signer = await provider.getSigner();
+      return { provider, signer };
+    }
+
+    async function uploadToIPFS(formEl) {
+      const fileInput = document.getElementById('file');
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) throw new Error('Please choose a file');
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('title', document.getElementById('title').value.trim());
+      fd.append('ipType', document.getElementById('type').value);
+      fd.append('description', document.getElementById('description').value.trim());
+      fd.append('license', document.getElementById('license').value);
+      fd.append('creator', document.getElementById('creator').value.trim());
+
+      const res = await fetch(`${BASE_URL}/ipfs/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Upload failed');
+      return data;
+    }
+
+    async function deployContract() {
+      const walletMsg = document.getElementById('walletMessage');
+      const voucherMsg = document.getElementById('voucherMessage');
+
+      try {
+        walletMsg.style.display = 'block';
+        walletMsg.textContent = '⏳ Preparing upload to IPFS...';
+        voucherMsg.style.display = 'none';
+
+        // 1) Upload file + metadata to IPFS via backend
+        const { metadataCid } = await uploadToIPFS();
+
+        // 2) Get ABI + address from backend
+        walletMsg.textContent = '⏳ Fetching contract information...';
+        const { address, abi } = await fetchContractInfo();
+
+        // 3) Connect wallet
+        walletMsg.textContent = '⏳ Connecting to wallet... Please approve in MetaMask';
+        const { signer } = await ensureWallet();
+
+        // 4) Build contract and send tx
+        const title = document.getElementById('title').value.trim();
+        const ipType = document.getElementById('type').value;
+        const description = document.getElementById('description').value.trim();
+
+        const contract = new ethers.Contract(address, abi, signer);
+        walletMsg.textContent = '🔐 Please confirm the transaction in your wallet...';
+        const tx = await contract.registerIP(title, ipType, description, metadataCid);
+
+        // 5) Wait for confirmation
+        walletMsg.textContent = `⛓️ Transaction submitted. Waiting for confirmation... (hash: ${tx.hash.slice(0,10)}...)`;
+        const receipt = await tx.wait(1);
+
+        voucherMsg.style.display = 'block';
+        voucherMsg.innerHTML = `✅ Transaction confirmed!<br>Tx Hash: ${receipt.hash}`;
+      } catch (err) {
+        console.error(err);
+        walletMsg.style.display = 'block';
+        walletMsg.textContent = `❌ ${err?.message || 'Unexpected error'}`;
+      }
+    }
+  </script>
+</body>
+</html>
